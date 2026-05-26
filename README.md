@@ -43,18 +43,19 @@ The macOS package is signed, notarized, and stapled. The Windows AAX plug-ins ar
 
 ## Editor
 
-Each plug-in embeds a WebView editor from its `mock` folder. The same HTML mock can be opened directly in a browser for visual inspection, while the JUCE plug-in uses the embedded assets through binary data.
+On Windows, the release plug-ins use the shared native ImGui editor from `Common/PrimitiveFxImGuiEditor.*`. The editor keeps the compact one-row knob layout, shared A/B and preset controls, and embedded PNG header icons for Undo, Redo, and Bypass so every plug-in presents the same control language. The legacy `mock` folders remain in the repository as browser-openable visual references and embedded WebView assets for platforms that do not use the native ImGui editor path.
 
 Editor features include:
 
 - fixed-size GUI tailored to each plug-in parameter count;
-- horizontal knob layout with consistent `Dry/Wet` and `Output` placement;
+- horizontal knob layout with consistent `Dry/Wet` and `Output` placement and automatically distributed spacing to avoid unused side gaps;
 - drag, fine-drag, wheel, and double-click reset interaction;
 - A/B slot buttons and preset selector UI;
 - Save and Help controls;
+- shared PNG Undo, Redo, and Bypass header icons across all 17 plug-ins;
 - centralized help dialog showing `pbTechLab`, the library version, and a clickable `https://pbtechlab.com/` link;
 - input and output meter display;
-- host-facing parameter updates through the JUCE WebView bridge.
+- host-facing parameter updates through JUCE APVTS.
 
 ## DSP And State
 

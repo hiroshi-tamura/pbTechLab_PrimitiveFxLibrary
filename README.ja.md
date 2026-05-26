@@ -43,18 +43,19 @@ macOS PKG は署名、公証、staple 済みです。Windows AAX プラグイン
 
 ## エディター
 
-各プラグインは `mock` フォルダの WebView エディターを埋め込みます。同じ HTML mock はブラウザで直接開いて見た目を確認でき、JUCE プラグインでは binary data として読み込まれます。
+Windows 版のリリースプラグインは、`Common/PrimitiveFxImGuiEditor.*` の共通ネイティブ ImGui エディターを使います。横一列のコンパクトなノブ配置、A/B、プリセット操作、Undo、Redo、Bypass の埋め込み PNG ヘッダーアイコンを全プラグインで統一しています。従来の `mock` フォルダは、ブラウザで開ける見た目確認用およびネイティブ ImGui 経路を使わないプラットフォーム向け WebView アセットとして残しています。
 
 エディター機能:
 
 - ノブ数に合わせた固定サイズGUI;
-- 横一列のノブ配置と、統一された `Dry/Wet` / `Output` 配置;
+- 横一列のノブ配置、統一された `Dry/Wet` / `Output` 配置、左右の無駄な空白を避ける自動間隔調整;
 - ドラッグ、微調整ドラッグ、ホイール、ダブルクリックリセット;
 - A/B スロットボタンとプリセットセレクター;
 - Save と Help コントロール;
+- 全17プラグイン共通の PNG Undo / Redo / Bypass ヘッダーアイコン;
 - `pbTechLab`、ライブラリバージョン、クリック可能な `https://pbtechlab.com/` を中央表示するヘルプ;
 - 入出力メーター;
-- JUCE WebView bridge 経由のパラメーター更新。
+- JUCE APVTS 経由のホスト向けパラメーター更新。
 
 ## DSP と状態保存
 

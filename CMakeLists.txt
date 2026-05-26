@@ -67,6 +67,40 @@ if (PB_BUILD_STANDALONE)
   list(APPEND PB_PLUGIN_FORMATS Standalone)
 endif()
 
+if (WIN32)
+  set(PB_PLUGIN_GUI_ROOT "" CACHE PATH "Optional Plugin_GUI checkout for native ImGui plug-in editors")
+  if (NOT PB_PLUGIN_GUI_ROOT AND DEFINED ENV{PB_PLUGIN_GUI_ROOT})
+    set(PB_PLUGIN_GUI_ROOT "$ENV{PB_PLUGIN_GUI_ROOT}" CACHE PATH "Optional Plugin_GUI checkout for native ImGui plug-in editors" FORCE)
+  endif()
+  if (NOT PB_PLUGIN_GUI_ROOT AND EXISTS "${PROJECT_SOURCE_DIR}/../Plugin_GUI/ImGui/src/main.cpp")
+    get_filename_component(PB_PLUGIN_GUI_ROOT "${PROJECT_SOURCE_DIR}/../Plugin_GUI" ABSOLUTE)
+    set(PB_PLUGIN_GUI_ROOT "${PB_PLUGIN_GUI_ROOT}" CACHE PATH "Optional Plugin_GUI checkout for native ImGui plug-in editors" FORCE)
+  endif()
+  if (NOT PB_PLUGIN_GUI_ROOT)
+    message(FATAL_ERROR "PB_PLUGIN_GUI_ROOT was not found. Set it to the Plugin_GUI checkout that contains ImGui/src/main.cpp")
+  endif()
+
+  set(PB_PLUGIN_GUI_IMGUI_SRC_DIR "${PB_PLUGIN_GUI_ROOT}/ImGui/src" CACHE PATH "Plugin_GUI ImGui template source directory")
+  set(PB_IMGUI_SOURCE_DIR "${PB_PLUGIN_GUI_ROOT}/ImGui/build/_deps/imgui-src" CACHE PATH "Dear ImGui source directory for native plug-in editors")
+
+  if (NOT EXISTS "${PB_PLUGIN_GUI_IMGUI_SRC_DIR}/main.cpp")
+    message(FATAL_ERROR "Plugin_GUI ImGui template was not found: ${PB_PLUGIN_GUI_IMGUI_SRC_DIR}/main.cpp")
+  endif()
+  if (NOT EXISTS "${PB_IMGUI_SOURCE_DIR}/imgui.cpp")
+    message(FATAL_ERROR "Dear ImGui source was not found: ${PB_IMGUI_SOURCE_DIR}/imgui.cpp")
+  endif()
+
+  juce_add_binary_data(PbPFL_ImGuiHeaderIcons
+    NAMESPACE PbPFLImGuiHeaderIcons
+    HEADER_NAME PbPFLImGuiHeaderIconsData.h
+    SOURCES
+      "${PROJECT_SOURCE_DIR}/Common/assets/header_icons/bypass_off_64.png"
+      "${PROJECT_SOURCE_DIR}/Common/assets/header_icons/bypass_on_64.png"
+      "${PROJECT_SOURCE_DIR}/Common/assets/header_icons/undo_64.png"
+      "${PROJECT_SOURCE_DIR}/Common/assets/header_icons/redo_64.png"
+  )
+endif()
+
 function(pb_add_primitive_fx_plugin target_name product_name plugin_code plugin_kind plugin_desc mock_dir)
   juce_add_plugin(${target_name}
     COMPANY_NAME "pbTechLab"
@@ -102,7 +136,9 @@ function(pb_add_primitive_fx_plugin target_name product_name plugin_code plugin_
       "${PROJECT_SOURCE_DIR}/Common/PrimitiveFxEditor.h"
   )
 
-  target_include_directories(${target_name} PRIVATE "${PROJECT_SOURCE_DIR}/Common")
+  target_include_directories(${target_name} PRIVATE
+    "${PROJECT_SOURCE_DIR}/Common"
+  )
 
   target_compile_definitions(${target_name}
     PUBLIC
@@ -116,7 +152,7 @@ function(pb_add_primitive_fx_plugin target_name product_name plugin_code plugin_
       PB_MOCK_DIR="${mock_dir}"
   )
 
-  target_compile_options(${target_name} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+  target_compile_options(${target_name} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /wd4189 /wd4505>)
 
   target_link_libraries(${target_name}
     PRIVATE
@@ -130,6 +166,46 @@ function(pb_add_primitive_fx_plugin target_name product_name plugin_code plugin_
       juce::juce_recommended_lto_flags
       juce::juce_recommended_warning_flags
   )
+
+  if (WIN32)
+    target_sources(${target_name}
+      PRIVATE
+        "${PROJECT_SOURCE_DIR}/Common/PrimitiveFxImGuiEditor.cpp"
+        "${PROJECT_SOURCE_DIR}/Common/PrimitiveFxImGuiEditor.h"
+        "${PB_IMGUI_SOURCE_DIR}/imgui.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/imgui_draw.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/imgui_tables.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/backends/imgui_impl_dx11.cpp"
+        "${PB_IMGUI_SOURCE_DIR}/backends/imgui_impl_win32.cpp"
+    )
+
+    target_include_directories(${target_name} PRIVATE
+      "${PB_PLUGIN_GUI_IMGUI_SRC_DIR}"
+      "${PB_IMGUI_SOURCE_DIR}"
+      "${PB_IMGUI_SOURCE_DIR}/backends"
+    )
+
+    target_compile_definitions(${target_name}
+      PRIVATE
+        PB_USE_IMGUI_EDITOR=1
+        PB_PLUGIN_GUI_IMGUI_MAIN="${PB_PLUGIN_GUI_IMGUI_SRC_DIR}/main.cpp"
+        UNICODE
+        _UNICODE
+        NOMINMAX
+    )
+
+    target_link_libraries(${target_name}
+      PRIVATE
+        PbPFL_ImGuiHeaderIcons
+        d3d11
+        dxgi
+        dwmapi
+        shell32
+        winmm
+    )
+  endif()
 endfunction()
 
 add_subdirectory(pbPFL_Reverb)

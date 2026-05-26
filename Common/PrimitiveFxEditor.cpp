@@ -162,7 +162,9 @@ void PrimitiveFxAudioProcessorEditor::timerCallback()
 }
 }
 
+#ifndef PB_USE_IMGUI_EDITOR
 juce::AudioProcessorEditor* pbpfl::PrimitiveFxAudioProcessor::createEditor()
 {
     return new PrimitiveFxAudioProcessorEditor(*this);
 }
+#endif

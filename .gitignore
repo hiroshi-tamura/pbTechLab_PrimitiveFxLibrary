@@ -17,6 +17,9 @@ dist/
 *.aaxplugin/
 *.png
 !public_gui_screenshots/pbTechLab_PrimitiveFxLibrary_GUI_Collection_Public.png
+!Common/assets/
+!Common/assets/header_icons/
+!Common/assets/header_icons/*.png
 HANDOVER.md
 HANDOVER.md.bak
 HANDOVER.md.pbterm-prev.bak
@@ -25,3 +28,6 @@ pbTermLog.txt
 *.env
 scripts/
 tools/
+# pbCodexHooksHandover
+.pbcodex-handover/
+.codex/hooks.json
